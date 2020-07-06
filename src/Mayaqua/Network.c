@@ -12066,7 +12066,6 @@ bool StartSSLEx(SOCK *sock, X *x, K *priv, UINT ssl_timeout, char *sni_hostname)
 	EVP_PKEY *key;
 	UINT prev_timeout = 1024;
 	SSL_CTX *ssl_ctx;
-
 #ifdef UNIX_SOLARIS
 	SOCKET_TIMEOUT_PARAM *ttparam;
 #endif //UNIX_SOLARIS
@@ -12113,7 +12112,6 @@ bool StartSSLEx(SOCK *sock, X *x, K *priv, UINT ssl_timeout, char *sni_hostname)
 		Unlock(sock->ssl_lock);
 		return true;
 	}
-
 	ssl_ctx = NewSSLCtx(sock->ServerMode);
 
 	Lock(openssl_lock);
@@ -12159,7 +12157,6 @@ bool StartSSLEx(SOCK *sock, X *x, K *priv, UINT ssl_timeout, char *sni_hostname)
 			SSL_CTX_set_options(ssl_ctx, SSL_OP_NO_SSLv3);
 #endif	// SSL_OP_NO_SSLv3
 		}
-
 		sock->ssl = SSL_new(ssl_ctx);
 		SSL_set_fd(sock->ssl, (int)sock->socket);
 
@@ -12176,7 +12173,6 @@ bool StartSSLEx(SOCK *sock, X *x, K *priv, UINT ssl_timeout, char *sni_hostname)
 
 	}
 	Unlock(openssl_lock);
-
 	if (x != NULL)
 	{
 		// Check the certificate and the private key

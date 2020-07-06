@@ -1,6 +1,6 @@
 // SoftEther VPN Source Code - Developer Edition Master Branch
 // Cedar Communication Module
-
+// © 2020 Nokia
 
 // Command.h
 // Header of Command.c
@@ -230,6 +230,7 @@ bool CmdEvalPortList(CONSOLE *c, wchar_t *str, void *param);
 wchar_t *PsClusterSettingMemberPromptPorts(CONSOLE *c, void *param);
 K *CmdLoadKey(CONSOLE *c, wchar_t *filename);
 bool CmdLoadCertAndKey(CONSOLE *c, X **xx, K **kk, wchar_t *cert_filename, wchar_t *key_filename);
+bool CmdLoadOpensslEngineCert(CONSOLE *c, X **xx, wchar_t *cert_filename);
 bool CmdEvalTcpOrUdp(CONSOLE *c, wchar_t *str, void *param);
 wchar_t *GetConnectionTypeStr(UINT type);
 bool CmdEvalHostAndSubnetMask4(CONSOLE *c, wchar_t *str, void *param);
@@ -368,6 +369,7 @@ UINT PcAccountNicSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountStatusShow(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountStatusHide(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountSecureCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
+UINT PcAccountOpensslEngineCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountRetrySet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountStartupSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PcAccountStartupRemove(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
@@ -412,6 +414,7 @@ UINT PsDebug(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsServerCertGet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsServerKeyGet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsServerCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
+UINT PsServerOpensslEngineCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsServerCipherGet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsServerCipherSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
 UINT PsKeepEnable(CONSOLE *c, char *cmd_name, wchar_t *str, void *param);
