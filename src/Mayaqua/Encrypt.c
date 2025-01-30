@@ -3228,9 +3228,7 @@ K *OpensslEngineToK(char *key_file_name, char *engine_name)
 {
 #ifndef OPENSSL_NO_ENGINE
     K *k;
-#if OPENSSL_API_COMPAT < 0x10100000L
     ENGINE_load_dynamic();
-#endif	// OPENSSL_API_COMPAT < 0x10100000L
     ENGINE *engine = ENGINE_by_id(engine_name);
     ENGINE_init(engine);
     EVP_PKEY *pkey;
