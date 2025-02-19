@@ -929,6 +929,9 @@ typedef struct CEDAR
 	COUNTER *ConnectionIncrement;	// Connection increment counter
 	X *ServerX;						// Server certificate
 	K *ServerK;						// Private key of the server certificate
+	char *ServerKeyType;
+	char *ServerEngineName;
+	char *ServerEngineKey;
 	char UsernameHubSeparator;		// Character which separates the username from the hub name
 	char *CipherList;				// List of encryption algorithms
 	UINT Version;					// Version information
@@ -1124,6 +1127,7 @@ CEDAR *NewCedar(X *server_x, K *server_k);
 void CedarForceLink();
 void SetCedarVpnBridge(CEDAR *c);
 void SetCedarCert(CEDAR *c, X *server_x, K *server_k);
+void SetCedarEngineCert(CEDAR *c, X *server_x, K *server_k, char *engine_name, char *key_name);
 void ReleaseCedar(CEDAR *c);
 void CleanupCedar(CEDAR *c);
 void StopCedar(CEDAR *c);

@@ -2959,9 +2959,13 @@ void ConnectionAccept(CONNECTION *c)
 		{
 			SetWantToUseCipher(s, c->Cedar->CipherList);
 		}
-
 		x = CloneX(c->Cedar->ServerX);
-		k = CloneK(c->Cedar->ServerK);
+
+		if (StrCmp(c->Cedar->ServerKeyType, "engine") == 0) {
+			k = OpensslEngineToK(c->Cedar->ServerEngineKey, c->Cedar->ServerEngineName);
+		} else {
+			k = CloneK(c->Cedar->ServerK);
+		}
 	}
 	Unlock(c->Cedar->lock);
 

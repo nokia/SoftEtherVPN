@@ -4041,7 +4041,6 @@ void SiWriteUserCfg(FOLDER *f, USER *u)
 					FreeBuf(b);
 				}
 				break;
-
 			case AUTHTYPE_ROOTCERT:
 				rootcert = (AUTHROOTCERT *)u->AuthData;
 				if (rootcert->Serial != NULL && rootcert->Serial->size >= 1)
@@ -5776,27 +5775,53 @@ void SiLoadServerCfg(SERVER *s, FOLDER *f)
 		}
 
 		// Server private key
-		b = CfgGetBuf(f, "ServerKey");
-		if (b != NULL)
-		{
-			k = BufToK(b, true, false, NULL);
-			FreeBuf(b);
+		bool engine_cert;
+		if (CfgGetStr(f, "ServerKeyType", tmp, sizeof(tmp))) {
+			if (StrCmp(tmp, "engine") == 0) {
+				engine_cert = true;
+			} else {
+				engine_cert = false;
+			}
+		} else {
+			engine_cert = false;
 		}
+		if (!engine_cert) {
+			b = CfgGetBuf(f, "ServerKey");
+			if (b != NULL)
+			{
+				k = BufToK(b, true, false, NULL);
+				FreeBuf(b);
+				if (x == NULL || k == NULL || CheckXandK(x, k) == false)
+				{
+					FreeX(x);
+					FreeK(k);
+					SiGenerateDefaultCert(&x, &k);
 
-		if (x == NULL || k == NULL || CheckXandK(x, k) == false)
-		{
-			FreeX(x);
-			FreeK(k);
-			SiGenerateDefaultCert(&x, &k);
+					SetCedarCert(c, x, k);
 
-			SetCedarCert(c, x, k);
+					FreeX(x);
+					FreeK(k);
+				}
+				else
+				{
+					SetCedarCert(c, x, k);
 
-			FreeX(x);
-			FreeK(k);
-		}
-		else
-		{
-			SetCedarCert(c, x, k);
+					FreeX(x);
+					FreeK(k);
+				}
+			}
+		} else {
+			if (CfgGetStr(f, "ServerEngineName", tmp, sizeof(tmp))) {
+				//TODO error handling
+				c->ServerEngineName = CopyStr(tmp);
+			}
+			if (CfgGetStr(f, "ServerEngineKey", tmp, sizeof(tmp))) {
+				// TODO error handling
+				c->ServerEngineKey = CopyStr(tmp);
+			}
+			k = OpensslEngineToK(c->ServerEngineKey, c->ServerEngineName);
+
+			SetCedarEngineCert(c, x, k, c->ServerEngineName, c->ServerEngineKey);
 
 			FreeX(x);
 			FreeK(k);
@@ -6169,15 +6194,24 @@ void SiWriteServerCfg(FOLDER *f, SERVER *s)
 		// Let the client not to send a signature
 		CfgAddBool(f, "NoSendSignature", s->NoSendSignature);
 
-		// Server certificate
-		b = XToBuf(c->ServerX, false);
-		CfgAddBuf(f, "ServerCert", b);
-		FreeBuf(b);
-
 		// Server private key
-		b = KToBuf(c->ServerK, false, NULL);
-		CfgAddBuf(f, "ServerKey", b);
-		FreeBuf(b);
+		if (StrCmp(c->ServerKeyType, "engine") == 0) {
+			CfgAddStr(f, "ServerKeyType", "engine");
+			CfgAddStr(f, "ServerEngineKey", c->ServerEngineKey);
+			CfgAddStr(f, "ServerEngineName", c->ServerEngineName);
+			b = XToBuf(c->ServerX, false);
+			CfgAddBuf(f, "ServerCert", b);
+			FreeBuf(b);
+		} else {
+			CfgAddStr(f, "ServerKeyType", "x509");
+			// Server certificate
+			b = XToBuf(c->ServerX, false);
+			CfgAddBuf(f, "ServerCert", b);
+			FreeBuf(b);
+			b = KToBuf(c->ServerK, false, NULL);
+			CfgAddBuf(f, "ServerKey", b);
+			FreeBuf(b);
+		}
 
 		{
 			// Character which separates the username from the hub name

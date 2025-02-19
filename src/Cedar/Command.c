@@ -7437,6 +7437,7 @@ void PsMain(PS *ps)
 			{"ServerCertGet", PsServerCertGet},
 			{"ServerKeyGet", PsServerKeyGet},
 			{"ServerCertSet", PsServerCertSet},
+			{"ServerOpenSslEngineCertSet", PsServerOpensslEngineCertSet},
 			{"ServerCipherGet", PsServerCipherGet},
 			{"ServerCipherSet", PsServerCipherSet},
 			{"KeepEnable", PsKeepEnable},
@@ -8499,6 +8500,21 @@ bool CmdLoadCertAndKey(CONSOLE *c, X **xx, K **kk, wchar_t *cert_filename, wchar
 	return true;
 }
 
+bool CmdLoadOpensslEngineCert(CONSOLE *c, X **xx, wchar_t *cert_filename)
+{
+	X *x;
+
+	x = FileToXW(cert_filename);
+	if (x == NULL)
+	{
+		c->Write(c, _UU("CMD_LOADCERT_FAILED"));
+		return false;
+	}
+	*xx = x;
+	return true;
+}
+
+
 // Read the secret key
 K *CmdLoadKey(CONSOLE *c, wchar_t *filename)
 {
@@ -8601,6 +8617,69 @@ UINT PsServerCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param)
 		}
 
 		FreeRpcKeyPair(&t);
+	}
+	else
+	{
+		ret = ERR_INTERNAL_ERROR;
+	}
+
+	FreeParamValueList(o);
+
+	return ret;
+}
+
+// Set the SSL certificate and the private key of the VPN Server
+UINT PsServerOpensslEngineCertSet(CONSOLE *c, char *cmd_name, wchar_t *str, void *param)
+{
+	LIST *o;
+	PS *ps = (PS *)param;
+	UINT ret = 0;
+	RPC_OPENSSL_ENGINE_KEY_PAIR t;
+	// Parameter list that can be specified
+	PARAM args[] =
+	{
+		// "name", prompt_proc, prompt_param, eval_proc, eval_param
+		{"LOADCERT", CmdPrompt, _UU("CMD_LOADCERTPATH"), CmdEvalIsFile, NULL},
+		{"KEYNAME", CmdPrompt, _UU("CMD_AccountOpensslCertSet_PROMPT_KEYNAME"), CmdEvalNotEmpty, NULL},
+		{"ENGINENAME", CmdPrompt, _UU("CMD_AccountOpensslCertSet_PROMPT_ENGINENAME"), CmdEvalNotEmpty, NULL},
+
+	};
+
+	o = ParseCommandList(c, cmd_name, str, args, sizeof(args) / sizeof(args[0]));
+	if (o == NULL)
+	{
+		return ERR_INVALID_PARAMETER;
+	}
+
+	Zero(&t, sizeof(t));
+
+	if (CmdLoadOpensslEngineCert(c, &t.Cert,
+		GetParamUniStr(o, "LOADCERT")))
+	{
+		wchar_t * engine_name = GetParamStr(o, "ENGINENAME");
+		StrCpy(t.EngineName, sizeof(t.EngineName), engine_name);
+		wchar_t * key_name = GetParamStr(o, "KEYNAME");
+		StrCpy(t.KeyName, sizeof(t.KeyName), key_name);
+		// RPC call
+		ret = ScSetServerOpensslEngineCert(ps->Rpc, &t);
+
+		if (ret != ERR_NO_ERROR)
+		{
+			// An error has occured
+			CmdPrintError(c, ret);
+			FreeParamValueList(o);
+			return ret;
+		}
+
+		if (t.Flag1 == 0)
+		{
+			// Show the warning message
+			c->Write(c, L"");
+			c->Write(c, _UU("SM_CERT_NEED_ROOT"));
+			c->Write(c, L"");
+		}
+
+		FreeRpcOpensslEngineKeyPair(&t);
 	}
 	else
 	{

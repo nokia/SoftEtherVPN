@@ -6426,7 +6426,6 @@ bool CtConnect(CLIENT *c, RPC_CLIENT_CONNECT *connect)
 					}
           else if (r->ClientAuth->AuthType == CLIENT_AUTHTYPE_OPENSSLENGINE)
 					{
-              /* r->ClientAuth->ClientK = OpensslEngineToK("asdf"); */
 						r->ClientAuth->SecureSignProc = NULL;
 					}
 					else
